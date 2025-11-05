@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
+
+# Add /bin and /usr/bin to PATH if running on NixOS
+PATH="${PATH}$(grep "ID=nixos" < /etc/os-release | sed 's/ID=nixos/:\/bin:\/usr\/bin/')"
+
 for var in $(compgen -e); do echo "$var=${!var}"; done
