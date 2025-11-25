@@ -10,10 +10,10 @@ PKG_LONGDESC="Root package used to build and create complete image"
 
 PKG_DEPENDS_TARGET="toolchain squashfs-tools:host dosfstools:host fakeroot:host kmod:host \
                     mtools:host populatefs:host libc gcc linux linux-drivers linux-firmware \
-                    ${BOOTLOADER} busybox umtprd util-linux usb-modeswitch unzip poppler jq socat \
-                    p7zip file initramfs grep wget util-linux btrfs-progs zstd lz4 empty lzo libzip \
+                    ${BOOTLOADER} busybox umtprd util-linux usb-modeswitch poppler jq socat \
+                    p7zip file initramfs grep util-linux btrfs-progs zstd lz4 empty lzo libzip \
                     bash coreutils system-utils autostart quirks powerstate gnupg \
-                    gzip six xmlstarlet pyudev dialog dbus-python network rocknix"
+                    gzip six xmlstarlet pyudev dialog network rocknix"
 
 PKG_UI="emulationstation es-themes textviewer"
 
@@ -29,7 +29,7 @@ PKG_SOUND="espeak libao"
 
 PKG_SYNC="synctools"
 
-PKG_TOOLS="patchelf ectool i2c-tools evtest"
+PKG_TOOLS="patchelf i2c-tools evtest"
 
 PKG_DEBUG="debug"
 

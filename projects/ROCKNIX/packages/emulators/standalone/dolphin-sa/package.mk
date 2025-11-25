@@ -4,12 +4,12 @@
 
 PKG_NAME="dolphin-sa"
 PKG_LICENSE="GPLv2"
-PKG_DEPENDS_TARGET="toolchain libevdev libdrm ffmpeg zlib libpng lzo libusb zstd ecm openal-soft pulseaudio alsa-lib libfmt hidapi"
+PKG_DEPENDS_TARGET="toolchain libevdev libdrm ffmpeg zlib libpng lzo libusb zstd ecm openal-soft pulseaudio alsa-lib libfmt hidapi curl"
 PKG_LONGDESC="Dolphin is a GameCube / Wii emulator, allowing you to play games for these two platforms on PC with improvements. "
 PKG_TOOLCHAIN="cmake"
 
 case ${DEVICE} in
-  SM8250|SM8550|SDM845|RK3399)
+  SM8250|SM8550|SDM845|RK3399|SM8650)
     PKG_VERSION="ba7bf19b102d1b27f594c780c9d75970a276213a"
     PKG_SITE="https://github.com/dolphin-emu/dolphin"
     PKG_URL="${PKG_SITE}.git"
@@ -17,7 +17,8 @@ case ${DEVICE} in
     PKG_PATCH_DIRS+=" qt6"
     PKG_CMAKE_OPTS_TARGET+=" -DENABLE_QT=ON \
                              -DUSE_RETRO_ACHIEVEMENTS=ON \
-                             -DENABLE_HEADLESS=OFF"
+                             -DENABLE_HEADLESS=OFF \
+                             -DCMAKE_EXE_LINKER_FLAGS=-flto=$(nproc)"
   ;;
   *)
     PKG_VERSION="e6583f8bec814d8f3748f1d7738457600ce0de56"
@@ -58,7 +59,7 @@ fi
 
 pre_configure_target() {
   PKG_CMAKE_OPTS_TARGET+=" -DCMAKE_BUILD_TYPE=Release \
-                           -Ddatadir="/storage/.config/dolphin-emu" \
+                           -DDISTRIBUTOR="ROCKNIX" \
                            -DENABLE_NOGUI=ON \
                            -DENABLE_EVDEV=ON \
                            -DUSE_DISCORD_PRESENCE=OFF \
@@ -73,7 +74,8 @@ pre_configure_target() {
                            -DENCODE_FRAMEDUMPS=OFF \
                            -DENABLE_AUTOUPDATE=OFF \
                            -DUSE_MGBA=OFF \
-                           -DENABLE_CLI_TOOL=OFF"
+                           -DENABLE_CLI_TOOL=OFF \
+                           -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 
   sed -i 's~#include <cstdlib>~#include <cstdlib>\n#include <cstdint>~g' ${PKG_BUILD}/Externals/VulkanMemoryAllocator/include/vk_mem_alloc.h
   sed -i 's~#include <cstdint>~#include <cstdint>\n#include <string>~g' ${PKG_BUILD}/Externals/VulkanMemoryAllocator/include/vk_mem_alloc.h
@@ -97,7 +99,7 @@ post_install() {
         DOLPHIN_BACKEND="\${DOLPHIN_BACKEND}"
         EXPORTS="if [ ! -z 'lsmod | grep panthor' ]; then LD_LIBRARY_PATH='\/usr\/lib\/libmali-valhall-g610-g13p0-x11-gbm.so' DOLPHIN_BACKEND='wayland'; else DOLPHIN_BACKEND='x11'; fi"
       ;;
-      SM8250|SM8550|RK3399)
+      SM8250|SM8550|RK3399|SM8650)
         DOLPHIN_BACKEND="x11"
         EXPORTS="export QT_QPA_PLATFORM=xcb"
       ;;
