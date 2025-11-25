@@ -49,16 +49,18 @@ unset EMUPERF
 
 #Graphics Backend
 if [ "$GRENDERER" > "0" ]; then
-	sed -i "/^GL_ScaleFactor=/c\GL_ScaleFactor=$GRENDERER" "${CONF_DIR}/${MELONDS_INI}"
+	sed -i "/^ScreenUseGL=/c\ScreenUseGL=$GRENDERER" "${CONF_DIR}/${MELONDS_INI}"
+	sed -i "/^3DRenderer=/c\3DRenderer=1" "${CONF_DIR}/${MELONDS_INI}"
 else
-	sed -i '/^GL_ScaleFactor=/c\GL_ScaleFactor=0' "${CONF_DIR}/${MELONDS_INI}"
+	sed -i '/^ScreenUseGL=/c\ScreenUseGL=0' "${CONF_DIR}/${MELONDS_INI}"
+	sed -i '/^3DRenderer=/c\3DRenderer=0' "${CONF_DIR}/${MELONDS_INI}"
 fi
 
 #Internal Resolution
 if [ "$IRES" > "0" ]; then
-        sed -i "/^ScreenUseGL=/c\ScreenUseGL=$IRES" "${CONF_DIR}/${MELONDS_INI}"
+        sed -i "/^GL_ScaleFactor=/c\GL_ScaleFactor=$IRES" "${CONF_DIR}/${MELONDS_INI}"
 else
-        sed -i '/^ScreenUseGL=/c\ScreenUseGL=1' "${CONF_DIR}/${MELONDS_INI}"
+        sed -i '/^GL_ScaleFactor=/c\GL_ScaleFactor=1' "${CONF_DIR}/${MELONDS_INI}"
 fi
 
 #Screen Orientation
@@ -133,8 +135,16 @@ else
     ROM="${1}"
 fi
 
-#Set QT Platform to Wayland
+# QT platform - default to xcb
 export QT_QPA_PLATFORM=xcb
+
+# QT platform - some device / driver combinations need wayland
+case ${HW_DEVICE} in
+    RK3566|RK3588|S922X)
+        [[ $(/usr/bin/gpudriver) == "libmali" ]] && export QT_QPA_PLATFORM=wayland
+    ;;
+esac
+
 @PANFROST@
 @HOTKEY@
 @LIBMALI@

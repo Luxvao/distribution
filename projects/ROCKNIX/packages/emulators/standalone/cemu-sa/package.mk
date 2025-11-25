@@ -43,6 +43,7 @@ pre_configure_target() {
   # Fix glm linking
   sed -e "s#glm::glm#glm#" -i ${PKG_BUILD}/src/{Common,input}/CMakeLists.txt
 
+  CXXFLAGS+=" -fpch-preprocess"
   PKG_CMAKE_OPTS_TARGET="-D ENABLE_VCPKG=OFF \
                          -D PORTABLE=OFF \
                          -D ENABLE_DISCORD_RPC=OFF \

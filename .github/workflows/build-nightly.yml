@@ -11,10 +11,14 @@ on:
         default: false
         type: boolean
   workflow_call:
+  pull_request:
+    types: [ assigned ]
 
 jobs:
   set-envs:
     if: (github.event_name != 'schedule') || (github.repository == 'ROCKNIX/distribution' && github.ref_name == 'next')
+    environment:
+      name: ${{ github.event_name == 'pull_request' && 'pr-approval' || 'auto' }}
     runs-on: ubuntu-24.04
     outputs:
       NIGHTLY: ${{ github.event_name == 'workflow_dispatch' && inputs.release == true && 'no' || 'yes' }}
@@ -30,7 +34,7 @@ jobs:
           OWNER: ${{ github.repository_owner }}
 
   build-docker:
-    if: (github.event_name != 'schedule') || (github.repository == 'ROCKNIX/distribution' && github.ref_name == 'next')
+    if: github.event_name != 'schedule' || (github.repository == 'ROCKNIX/distribution' && github.ref_name == 'next')
     name: Docker
     needs: set-envs
     uses: ./.github/workflows/build-docker-image.yml
@@ -59,9 +63,13 @@ jobs:
             project: ROCKNIX
           - device: H700
             project: ROCKNIX
+          - device: SDM845
+            project: ROCKNIX
           - device: SM8250
             project: ROCKNIX
           - device: SM8550
+            project: ROCKNIX
+          - device: SM8650
             project: ROCKNIX
     uses: ./.github/workflows/build-device.yml
     secrets: inherit
@@ -83,7 +91,7 @@ jobs:
         run: gh workflow run retry-workflow.yml -F run_id=${{ github.run_id }}
 
   release-nightly:
-     if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.repository_owner == 'ROCKNIX' && needs.set-envs.outputs.NIGHTLY == 'yes' }}
+     if: ${{ always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.repository_owner == 'ROCKNIX' && needs.set-envs.outputs.NIGHTLY == 'yes' && github.event_name != 'pull_request' }}
      name: Release nightly
      needs: build-devices
      runs-on: ubuntu-24.04

@@ -31,11 +31,11 @@ case ${DEVICE} in
   ;;
   *)
     case ${DEVICE} in
-      S922X|SM8550|SM8250|H700)
-        PKG_VERSION="6.17.6"
+      S922X|SM8550|SM8250|H700|SM8650|RK3566|RK3399)
+        PKG_VERSION="6.17.9"
       ;;
       *)
-        PKG_VERSION="6.12.43"
+        PKG_VERSION="6.12.57"
         PKG_PATCH_DIRS+=" 6.12-LTS"
       ;;
     esac
@@ -238,6 +238,18 @@ pre_make_target() {
 
     ${PKG_BUILD}/scripts/config --set-str CONFIG_EXTRA_FIRMWARE "${FW_LIST}"
     ${PKG_BUILD}/scripts/config --set-str CONFIG_EXTRA_FIRMWARE_DIR "external-firmware"
+  elif [ "${TARGET_ARCH}" = "aarch64" -a "${DEVICE}" = "SM8650" ]; then
+    mkdir -p ${PKG_BUILD}/external-firmware/qcom
+      cp -Lv ${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/filesystem/usr/lib/kernel-overlays/base/lib/firmware/qcom/gen70900_aqe.fw ${PKG_BUILD}/external-firmware/qcom
+      cp -Lv ${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/filesystem/usr/lib/kernel-overlays/base/lib/firmware/qcom/gen70900_sqe.fw ${PKG_BUILD}/external-firmware/qcom
+      cp -Lv ${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/filesystem/usr/lib/kernel-overlays/base/lib/firmware/qcom/gmu_gen70900.bin ${PKG_BUILD}/external-firmware/qcom
+    mkdir -p ${PKG_BUILD}/external-firmware/qcom/sm8650/ayaneo/ps2
+      cp -Lv ${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/filesystem/usr/lib/kernel-overlays/base/lib/firmware/qcom/sm8650/ayaneo/ps2/gen70900_zap.mbn ${PKG_BUILD}/external-firmware/qcom/sm8650/ayaneo/ps2
+
+    FW_LIST="$(find ${PKG_BUILD}/external-firmware -type f | sed 's|.*external-firmware/||' | sort | xargs)"
+
+    ${PKG_BUILD}/scripts/config --set-str CONFIG_EXTRA_FIRMWARE "${FW_LIST}"
+    ${PKG_BUILD}/scripts/config --set-str CONFIG_EXTRA_FIRMWARE_DIR "external-firmware"
   fi
 
   kernel_make listnewconfig
@@ -326,9 +338,18 @@ makeinstall_target() {
   rm -f ${INSTALL}/$(get_kernel_overlay_dir)/lib/modules/*/build
   rm -f ${INSTALL}/$(get_kernel_overlay_dir)/lib/modules/*/source
 
-  if [ "${BOOTLOADER}" = "u-boot" -o "${BOOTLOADER}" = "arm-efi" ]; then
+  if [ "${BOOTLOADER}" = "arm-efi" ]; then
+    mkdir -p ${INSTALL}/usr/share/bootloader/boot/grub
+    for dtb in arch/${TARGET_KERNEL_ARCH}/boot/dts/**/*.dtb; do
+      if [ -f ${dtb} ]; then
+          cp -v ${dtb} ${INSTALL}/usr/share/bootloader/boot/grub
+      fi
+    done
+  fi
+
+  if [ "${BOOTLOADER}" = "u-boot" ]; then
     mkdir -p ${INSTALL}/usr/share/bootloader
-    for dtb in arch/${TARGET_KERNEL_ARCH}/boot/dts/*.dtb arch/${TARGET_KERNEL_ARCH}/boot/dts/*/*.dtb; do
+    for dtb in arch/${TARGET_KERNEL_ARCH}/boot/dts/**/*.dtb; do
       if [ -f ${dtb} ]; then
         if [ "${DEVICE}" = "H700" -o "${DEVICE}" = "RK3326" -o "${DEVICE}" = "RK3399" -o "${DEVICE}" = "RK3566" -o "${DEVICE}" = "RK3588" ]; then
           mkdir -p ${INSTALL}/usr/share/bootloader/device_trees
@@ -339,5 +360,6 @@ makeinstall_target() {
       fi
     done
   fi
+
   makeinstall_host
 }
