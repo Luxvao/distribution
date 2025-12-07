@@ -2,12 +2,12 @@
 # Copyright (C) 2024-present ROCKNIX (https://github.com/ROCKNIX)
 
 PKG_NAME="portmaster"
-PKG_VERSION="2025.07.14-1510"
+PKG_VERSION="2025.11.23-1110"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="MIT"
 PKG_SITE="https://github.com/PortsMaster/PortMaster-GUI"
 PKG_URL="https://github.com/PortsMaster/PortMaster-GUI/releases/download/${PKG_VERSION}/PortMaster.zip"
-PKG_DEPENDS_TARGET="toolchain rocknix-hotkey gamecontrollerdb oga_controls control-gen xmlstarlet list-guid"
+PKG_DEPENDS_TARGET="toolchain rocknix-hotkey gamecontrollerdb oga_controls control-gen xmlstarlet list-guid gst-plugins-base"
 PKG_LONGDESC="Portmaster - a simple tool that allows you to download various game ports"
 PKG_TOOLCHAIN="manual"
 

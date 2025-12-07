@@ -55,6 +55,14 @@ then
   cp /usr/config/ssh/authorized_keys /storage/.ssh
 fi
 
+### Apply developer wifi config if they exist
+echo "Apply dev wifi config if available..." >>${LOG}
+if [ -d /usr/config/iwd ]
+then
+  tocon "Update developer wifi config..."
+  cp /usr/config/iwd/* /storage/.cache/iwd/
+fi
+
 ### Sync rsync configs
 echo "Update rsync configuration files..." >>${LOG}
 rsync --ignore-existing /usr/config/rsync-rules.conf /storage/.config/
@@ -194,6 +202,10 @@ grep -q "^system\.shutdown_delay_running_game=" /storage/.config/system/configs/
 grep -q "^system\.suspend\.park_cores=" /storage/.config/system/configs/system.cfg ||
     sed -i '$ a\system.suspend.park_cores=1' /storage/.config/system/configs/system.cfg
 
+# Set the flag to use DPMS on fake suspend if it doesn't already exist
+grep -q "^system\.suspend\.dpms=" /storage/.config/system/configs/system.cfg ||
+    sed -i '$ a\system.suspend.dpms=1' /storage/.config/system/configs/system.cfg
+
 # Wipe azahar gptokeyb mappings as they have changed
 rm -rf /storage/.config/azahar/*.gptk
 
@@ -206,3 +218,6 @@ if [ ! -d "/storage/.config/mednafen/mednafen.cfg" ]; then
   # Don't load cd images to RAM, doesn't work with CHD or is at least very slow on rk3566
   sed -i "s/cd.image_memcache 1/cd.image_memcache 0/" /storage/.config/mednafen/mednafen.cfg
 fi
+
+# Clean melonds-sa Gallium HUD config
+sed -i '/nds.show_fps=/d' /storage/.config/system/configs/system.cfg
